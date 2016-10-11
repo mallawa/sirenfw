@@ -3,7 +3,8 @@
 ;*	Assembler version:  XC8 v1.34                                           *
 ;*	Filename:                                                               *
 ;*		main.c (main routine)                                               *
-;*	Dependents:                                                             *
+;*	Dependents: 
+ *                                                              *
 ;*                                                                          *
 ;*	August 13, 2016                                                         *
 ;*                                                                          *
@@ -11,28 +12,38 @@
 ;****************************************************************************/
 
 #include <xc.h>
-#include "tmr2.h"
+#include "adc.h"
 
-void TMR2_Initialize(void)
+//Section: ADC Module APIs
+
+void ADC_Initialize(void)
 {
-    // TMR2ON off; T2CKPS 1:1; T2OUTPS 1:1;
-    T2CON = 0x04;
+    ADCON = 0x81;         // ADON enabled; CHS AN0;
 
-    // PR2 255;
-    PR2 = 0xFF;
+    TRISAbits.TRISA0 = 1; //  pin (RA0) as input
+    ANSELAbits.ANSA0 = 1; // configure (RA0) as analog input
 
-    // TMR2 0x00;
-    TMR2 = 0x00;
-
-    // Clearing IF flag.
-    PIR1bits.TMR2IF = 0;
 }
 
-/*void TMR2_StartTimer(void)
+
+adc_result_t ADC_GetConversion(adc_channel_t channel)
 {
-    // Start the Timer by writing to TMRxON bit
-    T2CONbits.TMR2ON = 1;
-} */
+    // Select the A/D channel
+    ADCONbits.CHS = channel;
+
+    // Turn on the ADC module
+    ADCONbits.ADON = 1;
+
+    // Start the conversion
+    ADCONbits.GO_nDONE = 1;
+
+    // Wait for the conversion to finish
+    while (ADCONbits.GO_nDONE);
+
+    // Conversion finished, return the result
+    return ADRES;
+}
 
 // End of File
+
 
